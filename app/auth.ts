@@ -22,7 +22,7 @@ export function normalizeUsername(value: string) {
 }
 
 export function validatePassword(password: string) {
-  return password.length >= 9 && password.length <= 128 && /[A-Za-zÀ-ÿ]/.test(password) && /\d/.test(password);
+  return password.length >= 6 && password.length <= 128;
 }
 
 function bytesToBase64Url(bytes: Uint8Array) {
@@ -98,7 +98,7 @@ export async function createUser(input: { username: string; displayName: string;
     throw new Error("Le nom d’utilisateur doit contenir entre 2 et 50 caractères.");
   }
   if (!validatePassword(input.password)) {
-    throw new Error("Le mot de passe doit contenir au moins 9 caractères, une lettre et un chiffre.");
+    throw new Error("Le mot de passe doit contenir au moins 6 caractères.");
   }
   if (!["admin", "editor", "viewer"].includes(input.role)) throw new Error("Rôle invalide.");
   if (input.isOwner && input.role !== "admin") throw new Error("Le propriétaire principal doit conserver le rôle administrateur.");
@@ -119,7 +119,7 @@ export async function createUser(input: { username: string; displayName: string;
 }
 
 export async function updateUserPassword(userId: number, password: string) {
-  if (!validatePassword(password)) throw new Error("Le mot de passe doit contenir au moins 9 caractères, une lettre et un chiffre.");
+  if (!validatePassword(password)) throw new Error("Le mot de passe doit contenir au moins 6 caractères.");
   const salt = new Uint8Array(16);
   crypto.getRandomValues(salt);
   const hash = await passwordHash(password, salt);

@@ -1509,13 +1509,13 @@ function AuthPage({ configured, onAuthenticated }: { configured: boolean; onAuth
           </label>
           <label>
             <span>Mot de passe</span>
-            <input name="password" type="password" minLength={9} maxLength={128} required autoComplete={configured ? "current-password" : "new-password"} />
-            {!configured && <small>Minimum 9 caractères, avec au moins une lettre et un chiffre.</small>}
+            <input name="password" type="password" minLength={6} maxLength={128} required autoComplete={configured ? "current-password" : "new-password"} />
+            {!configured && <small>Minimum 6 caractères.</small>}
           </label>
           {!configured && (
             <label>
               <span>Confirmer le mot de passe</span>
-              <input name="confirmation" type="password" minLength={9} maxLength={128} required autoComplete="new-password" />
+              <input name="confirmation" type="password" minLength={6} maxLength={128} required autoComplete="new-password" />
             </label>
           )}
           {error && <div className="auth-error" role="alert">{error}</div>}
@@ -2746,10 +2746,10 @@ function SettingsPage({ settings, currentTheme, accountName, accountEmail, carri
                     <option value="admin">Administrateur — droits métier étendus</option>
                   </select>
                 </label>
-                <label><span>Mot de passe</span><input name="password" type="password" minLength={9} maxLength={128} required autoComplete="new-password" /></label>
-                <label><span>Confirmer</span><input name="confirmation" type="password" minLength={9} maxLength={128} required autoComplete="new-password" onInput={(event) => event.currentTarget.setCustomValidity("")} /></label>
+                <label><span>Mot de passe</span><input name="password" type="password" minLength={6} maxLength={128} required autoComplete="new-password" /></label>
+                <label><span>Confirmer</span><input name="confirmation" type="password" minLength={6} maxLength={128} required autoComplete="new-password" onInput={(event) => event.currentTarget.setCustomValidity("")} /></label>
               </div>
-              <small className="password-rule">Au moins 9 caractères, avec une lettre et un chiffre.</small>
+              <small className="password-rule">Au moins 6 caractères.</small>
               <button className="primary-button" type="submit" disabled={savingMember}>{savingMember ? "Création…" : "Créer le compte partenaire"}</button>
             </form>
           ) : (
@@ -3109,8 +3109,8 @@ function MemberCard({ member, currentUsername, submit }: {
       </form>
       {!isCurrent && (
         <form className="member-password-form" onSubmit={(event) => void resetPassword(event)}>
-          <label><span>Nouveau mot de passe</span><input name="password" type="password" minLength={9} maxLength={128} required autoComplete="new-password" /></label>
-          <label><span>Confirmer</span><input name="confirmation" type="password" minLength={9} maxLength={128} required autoComplete="new-password" onInput={(event) => event.currentTarget.setCustomValidity("")} /></label>
+          <label><span>Nouveau mot de passe</span><input name="password" type="password" minLength={6} maxLength={128} required autoComplete="new-password" /></label>
+          <label><span>Confirmer</span><input name="confirmation" type="password" minLength={6} maxLength={128} required autoComplete="new-password" onInput={(event) => event.currentTarget.setCustomValidity("")} /></label>
           <button className="secondary-button" type="submit" disabled={resetting}>{resetting ? "Remplacement…" : "Remplacer le mot de passe"}</button>
         </form>
       )}
