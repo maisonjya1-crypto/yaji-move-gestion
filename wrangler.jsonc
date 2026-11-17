@@ -9,7 +9,7 @@
     {
       "binding": "DB",
       "database_name": "yaji-move-pilotage-db",
-      "database_id": "A_REMPLACER_PAR_ID_BASE_D1_YAJI",
+      "database_id": "5eae65b8-37fa-49f5-ad81-8e8ee58b4328",
       "migrations_table": "d1_migrations",
       "migrations_dir": "migrations"
     }
