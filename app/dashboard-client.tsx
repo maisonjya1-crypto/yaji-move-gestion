@@ -734,7 +734,7 @@ function OrderWhatsappTemplates({ order }: { order: Order }) {
   </div>;
 }
 const themeOptions: { key: ThemeKey; name: string; mode: "Clair" | "Sombre"; description: string; colors: string[] }[] = [
-  { key: "mauve-froid", name: "Mauve froid", mode: "Clair", description: "Mauve élégant, blanc doux et rose froid.", colors: ["#6f5680", "#a77ea7", "#f7f4f8", "#ffffff"] },
+  { key: "mauve-froid", name: "YAJI Noir & Fluo", mode: "Clair", description: "Le thème YAJI MOVE : noir, vert fluo et blanc.", colors: ["#0a0a0a", "#d4ff3a", "#4c6a00", "#ffffff"] },
   { key: "rose-poudre", name: "Rose poudré", mode: "Clair", description: "Rose subtil, prune douce et blanc rosé.", colors: ["#a85e78", "#d190a5", "#fff7f8", "#ffffff"] },
   { key: "sombre-prune", name: "Sombre prune", mode: "Sombre", description: "Prune profonde, lilas lumineux et contraste doux.", colors: ["#1b1620", "#5e3c68", "#c69ad3", "#f7eef8"] },
   { key: "bleu-brume", name: "Bleu brume", mode: "Clair", description: "Bleu froid, gris perle et blanc net.", colors: ["#546f8c", "#829ab1", "#f3f6f8", "#ffffff"] },

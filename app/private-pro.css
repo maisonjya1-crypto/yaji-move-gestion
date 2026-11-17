@@ -1127,7 +1127,7 @@
   display: grid;
   gap: 4px;
   padding: 12px 14px;
-  border: 1px solid var(--line, #ded5e2);
+  border: 1px solid var(--line, #e3e5df);
   border-radius: 14px;
   background: var(--surface-soft, #f8f4f8);
 }
@@ -1154,7 +1154,7 @@
   align-content: end;
   padding: 10px 12px;
   border-radius: 12px;
-  border: 1px dashed var(--line, #ded5e2);
+  border: 1px dashed var(--line, #e3e5df);
 }
 .product-derived-category span { font-size: 12px; opacity: .7; }
 .product-derived-category strong { font-size: 14px; }

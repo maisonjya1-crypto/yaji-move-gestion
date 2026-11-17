@@ -5,7 +5,7 @@
 .mj-carrier-mode-panel {
   margin-top: 16px;
   padding: 16px;
-  border: 1px solid var(--line, #ddd5e1);
+  border: 1px solid var(--line, #e3e5df);
   border-radius: 16px;
   background: var(--surface, #fff);
 }
@@ -57,7 +57,7 @@
   margin-top: 14px;
   padding: 5px;
   border-radius: 13px;
-  background: color-mix(in srgb, var(--accent, #74577d) 7%, transparent);
+  background: color-mix(in srgb, var(--accent, #4c6a00) 7%, transparent);
 }
 
 .mj-carrier-mode-tabs > button {
@@ -74,9 +74,9 @@
 }
 
 .mj-carrier-mode-tabs > button.active {
-  border-color: color-mix(in srgb, var(--accent, #74577d) 25%, var(--line, #ddd5e1));
+  border-color: color-mix(in srgb, var(--accent, #4c6a00) 25%, var(--line, #e3e5df));
   background: var(--surface, #fff);
-  box-shadow: 0 4px 14px rgba(35, 24, 39, .06);
+  box-shadow: 0 4px 14px rgba(10, 10, 10, .06);
 }
 
 .mj-carrier-mode-tabs small { color: var(--muted, #786f7b); }
@@ -85,7 +85,7 @@
 .mj-carrier-manual-body {
   margin-top: 14px;
   padding-top: 14px;
-  border-top: 1px solid var(--line, #e4dde7);
+  border-top: 1px solid var(--line, #e6e8e2);
 }
 
 .mj-carrier-auto-title > span {
@@ -110,7 +110,7 @@
   align-content: center;
   gap: 7px;
   padding: 13px;
-  border: 1px solid var(--line, #ddd5e1);
+  border: 1px solid var(--line, #e3e5df);
   border-radius: 13px;
   background: var(--surface, #fff);
   color: inherit;
@@ -120,8 +120,8 @@
 
 .mj-carrier-auto-grid > button:hover:not(:disabled),
 .mj-carrier-auto-grid > button.selected {
-  border-color: color-mix(in srgb, var(--accent, #74577d) 55%, var(--line, #ddd5e1));
-  box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent, #74577d) 8%, transparent);
+  border-color: color-mix(in srgb, var(--accent, #4c6a00) 55%, var(--line, #e3e5df));
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent, #4c6a00) 8%, transparent);
 }
 
 .mj-carrier-auto-grid > button:disabled {
@@ -158,7 +158,7 @@
 }
 
 .mj-carrier-empty {
-  background: color-mix(in srgb, var(--accent, #74577d) 6%, transparent);
+  background: color-mix(in srgb, var(--accent, #4c6a00) 6%, transparent);
   color: var(--muted, #786f7b);
 }
 
@@ -193,7 +193,7 @@
 
 .mj-carrier-quick-picks > button {
   padding: 7px 10px;
-  border: 1px solid var(--line, #ddd5e1);
+  border: 1px solid var(--line, #e3e5df);
   border-radius: 999px;
   background: var(--surface, #fff);
   color: inherit;
@@ -202,8 +202,8 @@
 }
 
 .mj-carrier-quick-picks > button.active {
-  border-color: color-mix(in srgb, var(--accent, #74577d) 50%, var(--line, #ddd5e1));
-  background: color-mix(in srgb, var(--accent, #74577d) 9%, transparent);
+  border-color: color-mix(in srgb, var(--accent, #4c6a00) 50%, var(--line, #e3e5df));
+  background: color-mix(in srgb, var(--accent, #4c6a00) 9%, transparent);
 }
 
 .mj-carrier-manual-fields {
@@ -228,7 +228,7 @@
   width: 100%;
   min-height: 42px;
   padding: 9px 11px;
-  border: 1px solid var(--line, #ddd5e1);
+  border: 1px solid var(--line, #e3e5df);
   border-radius: 11px;
   background: var(--surface, #fff);
   color: inherit;
