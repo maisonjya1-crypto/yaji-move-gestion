@@ -856,11 +856,11 @@ export default function StorefrontClientV3({ initialCatalog, productKey }: { ini
     </>}
 
     {!isProductPage && <>
-    {/* Accueil : un terrain de padel animé (même scène que l'ouverture), puis un titre court. */}
+    {/* Accueil : le terrain de padel de l'ouverture, en image fixe, puis un titre court. */}
     <section className="mj-hero">
       <div className="mj-hero-emblem" aria-hidden="true">
         <span className="mj-hero-speed" />
-        <PadelScene />
+        <PadelScene className="is-static" />
       </div>
       <div className="mj-hero-copy">
         {leadPromotion && <a className="mj-hero-chip" href="#promotions">{promotionRuleLabel(leadPromotion)}</a>}

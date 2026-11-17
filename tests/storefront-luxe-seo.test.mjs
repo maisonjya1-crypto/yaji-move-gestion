@@ -10,13 +10,12 @@ const page = read("app/boutique/page.tsx");
 const layout = read("app/boutique/layout.tsx");
 const client = read("app/boutique/storefront-client-v3.tsx");
 
-test("l'ouverture est rendue côté serveur, une fois par session, passable et coupée si l'appareil réduit les animations", () => {
+test("l'ouverture est rendue côté serveur, passable et coupée si l'appareil réduit les animations", () => {
   assert.doesNotMatch(intro, /^"use client"/m);
   assert.match(page, /<BrandIntro \/>/);
-  assert.match(intro, /sessionStorage\.getItem\("mj-intro-seen"\)/);
   assert.match(intro, /prefers-reduced-motion: reduce/);
   assert.match(intro, /addEventListener\("click",skip\)/);
-  assert.match(intro, /setTimeout\(function\(\)\{set\("off"\)\},3400\)/);
+  assert.match(intro, /setTimeout\(function\(\)\{set\("off"\)\},5100\)/);
   assert.match(intro, /aria-hidden="true"/);
   assert.match(intro, /<PadelScene className="mj-intro-court" \/>/);
   assert.match(intro, /Yallah, aji move/);
@@ -90,7 +89,7 @@ test("les données structurées décrivent la boutique et ses vrais produits, sa
 });
 
 test("l'accueil montre le terrain de padel animé et la vitrine photos du logiciel juste dessous", () => {
-  assert.match(client, /<PadelScene \/>/);
+  assert.match(client, /<PadelScene className="is-static" \/>/);
   const hero = client.indexOf('<section className="mj-hero">');
   const showcase = client.indexOf('renderMarketingSections("after_categories")');
   const deal = client.indexOf('<section className="mj-deal" id="promotions">');

@@ -127,38 +127,52 @@ body:has(.mj-shop-root) { background: #0a0a0a; }
 .mj-padel-net-top { stroke: #f5f5f2; stroke-width: 3; stroke-linecap: round; }
 .mj-padel-net-post { stroke: #f5f5f2; stroke-width: 4; stroke-linecap: round; }
 .mj-racket-head { fill: #0a0a0a; stroke: #d4ff3a; stroke-width: 5; }
-.mj-racket-holes { fill: #d4ff3a; opacity: .55; }
+.mj-racket-holes { fill: #d4ff3a; opacity: .5; }
 .mj-racket-handle { fill: #f5f5f2; }
-.mj-racket { transform-box: fill-box; transform-origin: 50% 100%; }
-.mj-racket-near { animation: mj-swing-near var(--rally) ease-in-out infinite; }
-.mj-racket-far { animation: mj-swing-far var(--rally) ease-in-out infinite; }
+.mj-court-logo { opacity: .3; }
+.mj-player-legs, .mj-player-arm { fill: none; stroke: #ecece6; stroke-linecap: round; stroke-linejoin: round; }
+.mj-player-legs { stroke-width: 9; }
+.mj-player-arm { stroke-width: 7; }
+.mj-player-torso { fill: none; stroke: #d4ff3a; stroke-width: 16; stroke-linecap: round; }
+.mj-player-far .mj-player-torso { stroke: #f5f5f2; }
+.mj-player-head { fill: #ecece6; }
+.mj-player-swing { transform-box: view-box; transform-origin: 3px -74px; }
+.mj-player-near { animation: mj-sway-near var(--rally) ease-in-out infinite; }
+.mj-player-far { animation: mj-sway-far var(--rally) ease-in-out infinite; }
+.mj-player-near .mj-player-swing { animation: mj-swing-near var(--rally) ease-in-out infinite; }
+.mj-player-far .mj-player-swing { animation: mj-swing-far var(--rally) ease-in-out infinite; }
 .mj-ball { fill: #d4ff3a; filter: drop-shadow(0 0 6px #d4ff3a99); }
 .mj-ball-seam { fill: none; stroke: #0a0a0a; stroke-width: 1.4; stroke-linecap: round; }
 .mj-ball-shadow { fill: #000; opacity: .55; }
-.mj-ball-track { transform: translate(186px, 312px); animation: mj-ball-track var(--rally) linear infinite; }
-.mj-ball-lift { transform: translateY(-22px); animation: mj-ball-lift var(--rally) linear infinite; }
+.mj-ball-track { transform: translate(214px, 292px); animation: mj-ball-track var(--rally) linear infinite; }
+.mj-ball-lift { transform: translateY(-16px); animation: mj-ball-lift var(--rally) linear infinite; }
+/* Version fixe (haut de page) : on fige l'instant de la frappe. */
+.mj-padel.is-static * { animation: none !important; }
+.mj-padel.is-static .mj-player-swing { transform: rotate(12deg); }
 @keyframes mj-ball-track {
-  0% { transform: translate(186px, 312px) scale(1); }
-  35% { transform: translate(222px, 150px) scale(.7); }
-  45% { transform: translate(228px, 128px) scale(.64); }
-  52% { transform: translate(232px, 108px) scale(.6); }
-  85% { transform: translate(196px, 268px) scale(.92); }
-  93% { transform: translate(190px, 292px) scale(.96); }
-  100% { transform: translate(186px, 312px) scale(1); }
+  0% { transform: translate(214px, 292px) scale(1); }
+  35% { transform: translate(240px, 150px) scale(.7); }
+  45% { transform: translate(250px, 122px) scale(.64); }
+  52% { transform: translate(258px, 96px) scale(.58); }
+  85% { transform: translate(226px, 252px) scale(.92); }
+  93% { transform: translate(220px, 274px) scale(.96); }
+  100% { transform: translate(214px, 292px) scale(1); }
 }
 @keyframes mj-ball-lift {
-  0% { transform: translateY(-22px); animation-timing-function: ease-out; }
+  0% { transform: translateY(-16px); animation-timing-function: ease-out; }
   17% { transform: translateY(-104px); animation-timing-function: ease-in; }
   35% { transform: translateY(0); animation-timing-function: ease-out; }
-  45% { transform: translateY(-18px); animation-timing-function: ease-in-out; }
-  52% { transform: translateY(-26px); animation-timing-function: ease-out; }
-  68% { transform: translateY(-92px); animation-timing-function: ease-in; }
+  45% { transform: translateY(-30px); animation-timing-function: ease-in-out; }
+  52% { transform: translateY(-60px); animation-timing-function: ease-out; }
+  68% { transform: translateY(-96px); animation-timing-function: ease-in; }
   85% { transform: translateY(0); animation-timing-function: ease-out; }
-  93% { transform: translateY(-18px); animation-timing-function: ease-in-out; }
-  100% { transform: translateY(-22px); }
+  93% { transform: translateY(-14px); animation-timing-function: ease-in-out; }
+  100% { transform: translateY(-16px); }
 }
-@keyframes mj-swing-near { 0%, 100% { transform: rotate(14deg); } 8% { transform: rotate(-26deg); } 30% { transform: rotate(-6deg); } 88% { transform: rotate(-4deg); } 95% { transform: rotate(26deg); } }
-@keyframes mj-swing-far { 0%, 40% { transform: rotate(-6deg); } 48% { transform: rotate(-24deg); } 54% { transform: rotate(18deg); } 70%, 100% { transform: rotate(0deg); } }
+@keyframes mj-swing-near { 0%, 100% { transform: rotate(0deg); } 9% { transform: rotate(-62deg); } 30%, 78% { transform: rotate(12deg); } 92% { transform: rotate(48deg); } }
+@keyframes mj-swing-far { 0%, 38% { transform: rotate(12deg); } 46% { transform: rotate(48deg); } 52% { transform: rotate(0deg); } 61% { transform: rotate(-62deg); } 80%, 100% { transform: rotate(12deg); } }
+@keyframes mj-sway-near { 0%, 100% { transform: translateX(0); } 50% { transform: translateX(14px); } }
+@keyframes mj-sway-far { 0%, 100% { transform: translateX(10px); } 50% { transform: translateX(0); } }
 
 .mj-hero-copy { max-width: 34rem; }
 .mj-hero-chip { display: inline-flex; margin-bottom: 18px; padding: 7px 12px; border: 1px solid var(--gold); border-radius: 2px; color: var(--gold); font-size: 11px; font-weight: 500; letter-spacing: .16em; text-transform: uppercase; text-decoration: none; }
@@ -560,21 +574,21 @@ body:has(.mj-shop-root) { background: #0a0a0a; }
   background: radial-gradient(circle at 50% 46%, #1a2209 0, #0a0a0a 64%);
   color: #f5f5f2;
   cursor: pointer;
-  animation: mj-intro-exit .6s cubic-bezier(.7, 0, .3, 1) 2.45s forwards;
+  animation: mj-intro-exit .6s cubic-bezier(.7, 0, .3, 1) 4.3s forwards;
 }
 .mj-intro[data-state="skip"] { animation: mj-intro-exit .4s ease forwards; }
 .mj-intro[data-state="off"] { display: none; }
 .mj-intro-stage { position: relative; width: var(--stage); aspect-ratio: 1; }
-.mj-intro-court { position: absolute; inset: 0; width: 100%; height: 100%; --rally: 1.5s; animation: mj-intro-court 2.5s cubic-bezier(.4, 0, .2, 1) forwards; }
+.mj-intro-court { position: absolute; inset: 0; width: 100%; height: 100%; --rally: 1.4s; animation: mj-intro-court 4.3s cubic-bezier(.4, 0, .2, 1) forwards; }
 .mj-intro-brand {
   position: absolute; inset: 0; display: grid; place-content: center; justify-items: center; gap: 10px;
   opacity: 0; transform: scale(.7);
-  animation: mj-intro-brand .55s cubic-bezier(.2, .9, .3, 1.25) 1.35s forwards;
+  animation: mj-intro-brand .55s cubic-bezier(.2, .9, .3, 1.25) 3.05s forwards;
 }
 .mj-intro-brand img { width: calc(var(--stage) * .26); height: auto; filter: drop-shadow(0 0 22px #d4ff3a66); }
 .mj-intro-brand strong { font: italic 400 calc(var(--stage) * .1)/1 "Anton", Impact, sans-serif; letter-spacing: .02em; color: #f5f5f2; }
 .mj-intro-brand small { font: 700 calc(var(--stage) * .028)/1 "Space Grotesk", system-ui, sans-serif; letter-spacing: .3em; text-transform: uppercase; color: #d4ff3a; }
-@keyframes mj-intro-court { 0% { opacity: 0; transform: scale(.9) rotateX(18deg); } 15% { opacity: 1; transform: none; } 52% { opacity: 1; filter: none; } 70%, 100% { opacity: .16; filter: blur(2px); transform: scale(1.08); } }
+@keyframes mj-intro-court { 0% { opacity: 0; transform: scale(.9); } 8% { opacity: 1; transform: none; } 68% { opacity: 1; filter: none; transform: none; } 78%, 100% { opacity: .14; filter: blur(2px); transform: scale(1.08); } }
 @keyframes mj-intro-brand { to { opacity: 1; transform: none; } }
 @keyframes mj-intro-exit { to { opacity: 0; visibility: hidden; transform: scale(1.06); pointer-events: none; } }
 
