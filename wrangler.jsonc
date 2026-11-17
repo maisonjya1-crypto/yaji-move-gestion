@@ -1,0 +1,30 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "yaji-move-gestion",
+  "main": "./worker/index.ts",
+  "compatibility_date": "2026-08-13",
+  "compatibility_flags": ["nodejs_compat"],
+  "account_id": "ba411a0676f980baae49fad053b50563",
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "yaji-move-pilotage-db",
+      "database_id": "A_REMPLACER_PAR_ID_BASE_D1_YAJI",
+      "migrations_table": "d1_migrations",
+      "migrations_dir": "migrations"
+    }
+  ],
+  "ai": {
+    "binding": "AI"
+  },
+  "triggers": {
+    "crons": ["*/5 * * * *", "*/30 * * * *", "15 2 * * *"]
+  },
+  "observability": {
+    "enabled": true,
+    "head_sampling_rate": 1
+  },
+  "vars": {
+    "META_API_VERSION": "v26.0"
+  }
+}

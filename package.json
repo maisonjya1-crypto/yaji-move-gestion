@@ -1,0 +1,55 @@
+{
+  "name": "yaji-move-pilotage",
+  "version": "0.1.0",
+  "private": true,
+  "engines": {
+    "node": ">=22.13.0"
+  },
+  "scripts": {
+    "install:ci": "npm ci",
+    "dev": "WRANGLER_LOG_PATH=.wrangler/wrangler.log vite",
+    "build": "vinext build",
+    "deploy": "npm run build && wrangler deploy",
+    "start": "WRANGLER_LOG_PATH=.wrangler/wrangler.log vinext start",
+    "test": "npm run build && node --test tests/*.test.mjs",
+    "validate:artifact": "bash scripts/validate-artifact.sh",
+    "lint": "eslint . --ignore-pattern dist --ignore-pattern .next",
+    "typecheck": "tsc --noEmit",
+    "db:generate": "drizzle-kit generate",
+    "db:migration:create": "wrangler d1 migrations create yaji-move-pilotage-db",
+    "db:migrations:list:local": "wrangler d1 migrations list yaji-move-pilotage-db --local",
+    "db:migrations:apply:local": "wrangler d1 migrations apply yaji-move-pilotage-db --local"
+  },
+  "dependencies": {
+    "drizzle-orm": "0.45.2",
+    "next": "16.4.4",
+    "react": "19.2.8",
+    "react-dom": "19.2.8"
+  },
+  "devDependencies": {
+    "@cloudflare/vite-plugin": "1.54.10",
+    "@cloudflare/workers-types": "^5.20260916.1",
+    "@tailwindcss/postcss": "4.2.1",
+    "@types/node": "22.19.19",
+    "@types/react": "19.2.14",
+    "@types/react-dom": "19.2.3",
+    "@vitejs/plugin-react": "6.0.2",
+    "@vitejs/plugin-rsc": "0.5.35",
+    "drizzle-kit": "0.31.11",
+    "eslint": "9.39.4",
+    "eslint-config-next": "16.3.5",
+    "react-server-dom-webpack": "19.2.8",
+    "tailwindcss": "4.2.1",
+    "typescript": "5.9.3",
+    "vinext": "1.0.0-beta.11",
+    "vite": "8.3.0",
+    "wrangler": "4.132.0"
+  },
+  "overrides": {
+    "undici": "7.30.0",
+    "sharp": "0.35.5",
+    "source-map-js": "1.2.2"
+  },
+  "type": "module",
+  "displayName": "YAJI MOVE — Pilotage"
+}

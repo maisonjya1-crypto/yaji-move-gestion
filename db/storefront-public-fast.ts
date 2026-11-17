@@ -1,0 +1,431 @@
+import { aboutCopy, deliveryCopy, heroCopy } from "../lib/storefront-copy";
+import { giftBoxFromSettings, normalizeAudience } from "../lib/storefront-extras";
+import type { StorefrontCatalog } from "../app/boutique/storefront-types";
+import { normalizeMoroccanPhone } from "./phone";
+import { normalizeEligibleCategories, type StorefrontPromotion } from "../lib/storefront-promotions";
+
+type PublicProductRow = {
+  id: number;
+  productCode: string;
+  name: string;
+  category: string;
+  salePrice: number;
+  availabilityMode: string;
+  badge: string;
+  description: string;
+};
+type PublicOfferRow = { id: number; name: string; description: string; price: number; comparePrice: number; badge: string };
+type PublicPromotionRow = {
+  id: number;
+  name: string;
+  code: string;
+  description: string;
+  ruleType: StorefrontPromotion["ruleType"];
+  percentValue: number;
+  minimumQuantity: number;
+  buyQuantity: number;
+  freeQuantity: number;
+  eligibleCategories: string;
+  isActive: number;
+  priority: number;
+  displayEnabled: number;
+  badge: string;
+  ctaLabel: string;
+};
+type PublicMarketingRow = {
+  id: number;
+  eyebrow: string;
+  title: string;
+  body: string;
+  badge: string;
+  ctaLabel: string;
+  target: string;
+  placement: string;
+};
+type OfferItemRow = {
+  offerId: number;
+  productId: number;
+  category: string;
+  availabilityMode: string;
+  archivedAt: string | null;
+};
+type MediaRow = { id: number; ownerType: string; ownerId: number; kind: string };
+type SettingRow = { key: string; value: string };
+type WhatsAppNumber = { label?: string; phone?: string; isDefault?: boolean };
+
+const excludedPublicCategories = new Set(["Électronique", "Electronique", "Boîtes", "Boites"]);
+
+function publicCategory(category: string) {
+  if (["Wallets", "Wallet", "Portefeuille", "Portefeuilles"].includes(category)) return "Portefeuilles";
+  return category || "Autre";
+}
+
+function defaultWhatsApp(raw: string | undefined) {
+  try {
+    const parsed = JSON.parse(raw || "[]") as WhatsAppNumber[];
+    const preferred = parsed.find((item) => item?.isDefault && item?.phone) || parsed.find((item) => item?.phone);
+    return typeof preferred?.phone === "string" ? (normalizeMoroccanPhone(preferred.phone) || "") : "";
+  } catch {
+    return "";
+  }
+}
+
+function rows<T>(result: D1Result<unknown> | undefined) {
+  return (result?.results || []) as T[];
+}
+
+function brandStrip(raw: string | undefined) {
+  const values = (raw || "")
+    .split(/[|,\n]/)
+    .map((value) => value.trim())
+    .filter(Boolean)
+    .slice(0, 30);
+  return values.length ? values : ["YAJI MOVE", "MONTRES", "BIJOUX", "PORTEFEUILLES", "PACKS"];
+}
+
+export async function loadStorefrontCatalogFast(database: D1Database): Promise<StorefrontCatalog> {
+  const result = await database.batch([
+    database.prepare(`
+      SELECT
+        p.id,
+        p.product_code AS productCode,
+        COALESCE(NULLIF(s.public_name, ''), p.name) AS name,
+        p.category,
+        CASE WHEN s.public_price IS NULL OR s.public_price <= 0 THEN p.sale_price ELSE s.public_price END AS salePrice,
+        COALESCE(s.availability_mode, 'available') AS availabilityMode,
+        COALESCE(s.badge, '') AS badge,
+        COALESCE(s.description, '') AS description
+      FROM products p
+      JOIN storefront_product_settings s ON s.product_id = p.id
+      WHERE s.is_visible = 1
+        AND p.archived_at IS NULL
+        AND p.category NOT IN ('Électronique', 'Electronique', 'Boîtes', 'Boites')
+      ORDER BY COALESCE(s.sort_order, 0), p.category COLLATE NOCASE, name COLLATE NOCASE
+      LIMIT 500
+    `),
+    database.prepare(`
+      SELECT id, name, description, price, compare_price AS comparePrice, badge
+      FROM storefront_offers
+      WHERE is_active = 1
+      ORDER BY sort_order, id DESC
+      LIMIT 100
+    `),
+    database.prepare(`
+      SELECT i.offer_id AS offerId, i.product_id AS productId,
+             p.category AS category,
+             COALESCE(s.availability_mode, 'available') AS availabilityMode,
+             p.archived_at AS archivedAt
+      FROM storefront_offer_items i
+      JOIN products p ON p.id = i.product_id
+      LEFT JOIN storefront_product_settings s ON s.product_id = p.id
+      ORDER BY i.offer_id, i.product_id
+    `),
+    database.prepare(`
+      SELECT m.id, m.owner_type AS ownerType, m.owner_id AS ownerId, m.kind
+      FROM storefront_media m
+      WHERE m.owner_type = 'brand'
+         OR m.kind = 'gallery'
+      ORDER BY m.owner_type, m.owner_id, m.sort_order, m.id
+    `),
+    database.prepare(`
+      SELECT id, eyebrow, title, body, badge, cta_label AS ctaLabel, target, placement
+      FROM storefront_marketing_sections
+      WHERE is_active = 1
+      ORDER BY placement, sort_order, id DESC
+      LIMIT 30
+    `),
+    database.prepare(`
+      SELECT key, value FROM settings
+      WHERE key IN (
+        'account_name', 'whatsapp_numbers', 'storefront_brand_name', 'storefront_announcement',
+        'storefront_hero_title', 'storefront_hero_text', 'storefront_shipping_note',
+        'storefront_meta_pixel_id', 'storefront_contact_whatsapp', 'storefront_brand_strip',
+        'storefront_promo_enabled', 'storefront_promo_badge', 'storefront_promo_title',
+        'storefront_promo_text', 'storefront_promo_cta_label', 'storefront_promo_offer_id',
+        'storefront_announcement_ar', 'storefront_announcement_en',
+        'storefront_hero_title_ar', 'storefront_hero_title_en',
+        'storefront_hero_text_ar', 'storefront_hero_text_en',
+        'storefront_shipping_note_ar', 'storefront_shipping_note_en',
+        'storefront_about_title', 'storefront_about_text', 'storefront_about_title_ar',
+        'storefront_about_text_ar', 'storefront_about_title_en', 'storefront_about_text_en',
+        'storefront_giftbox_enabled', 'storefront_giftbox_label', 'storefront_giftbox_price',
+        'storefront_giftbox_cost', 'storefront_giftbox_text'
+      )
+    `),
+  ]);
+
+  const products = rows<PublicProductRow>(result[0]);
+  const offers = rows<PublicOfferRow>(result[1]);
+  const offerItems = rows<OfferItemRow>(result[2]);
+  const media = rows<MediaRow>(result[3]);
+  const marketingRows = rows<PublicMarketingRow>(result[4]);
+  const settingsRows = rows<SettingRow>(result[5]);
+  // Avis clients : chargés à part pour qu'une base pas encore migrée n'empêche jamais la boutique de s'afficher.
+  let reviewRows: Array<{ id: number; name: string; city: string; rating: number; body: string; productId: number | null; source: string; reviewDate: string | null; createdAt: string }> = [];
+  try {
+    reviewRows = (await database.prepare(`
+      SELECT id, customer_name AS name, city, rating, body, product_id AS productId, source,
+             review_date AS reviewDate, created_at AS createdAt
+      FROM storefront_reviews
+      WHERE is_visible = 1
+      ORDER BY sort_order, COALESCE(review_date, created_at) DESC, id DESC
+      LIMIT 60
+    `).all<(typeof reviewRows)[number]>()).results || [];
+  } catch {
+    reviewRows = [];
+  }
+  let promotionRows: PublicPromotionRow[] = [];
+  try {
+    promotionRows = (await database.prepare(`
+      SELECT id, name, code, description,
+             rule_type AS ruleType,
+             percent_value AS percentValue,
+             minimum_quantity AS minimumQuantity,
+             buy_quantity AS buyQuantity,
+             free_quantity AS freeQuantity,
+             eligible_categories AS eligibleCategories,
+             is_active AS isActive,
+             priority,
+             display_enabled AS displayEnabled,
+             badge,
+             cta_label AS ctaLabel
+      FROM storefront_promotions
+      ORDER BY priority, id
+      LIMIT 100
+    `).all<PublicPromotionRow>()).results;
+  } catch {
+    try {
+      const legacy = (await database.prepare(`
+        SELECT id, name, code, description,
+               rule_type AS ruleType,
+               percent_value AS percentValue,
+               minimum_quantity AS minimumQuantity,
+               buy_quantity AS buyQuantity,
+               free_quantity AS freeQuantity,
+               eligible_categories AS eligibleCategories,
+               is_active AS isActive,
+               priority
+        FROM storefront_promotions
+        ORDER BY priority, id
+        LIMIT 100
+      `).all<Omit<PublicPromotionRow, "displayEnabled" | "badge" | "ctaLabel">>()).results;
+      promotionRows = legacy.map((row) => ({
+        ...row,
+        displayEnabled: 1,
+        badge: "OFFRE",
+        ctaLabel: "Voir les produits",
+      }));
+    } catch {
+      // Compatibility during a rolling deploy or tests created before migration 0016.
+      promotionRows = [];
+    }
+  }
+  const settings = Object.fromEntries(settingsRows.map((row) => [row.key, row.value]));
+
+  const mediaByOwner = new Map<string, string[]>();
+  let logoUrl = "/yaji-move-logo.jpeg";
+  let heroImageUrl = "";
+  for (const item of media) {
+    const url = `/api/storefront/media/${item.id}`;
+    if (item.ownerType === "brand") {
+      if (item.kind === "logo") logoUrl = url;
+      if (item.kind === "hero") heroImageUrl = url;
+      continue;
+    }
+    const key = `${item.ownerType}:${item.ownerId}`;
+    const list = mediaByOwner.get(key);
+    if (list) list.push(url);
+    else mediaByOwner.set(key, [url]);
+  }
+
+  const itemsByOffer = new Map<number, OfferItemRow[]>();
+  for (const item of offerItems) {
+    const list = itemsByOffer.get(item.offerId);
+    if (list) list.push(item);
+    else itemsByOffer.set(item.offerId, [item]);
+  }
+
+  const businessWhatsapp = defaultWhatsApp(settings.whatsapp_numbers);
+  const contactWhatsapp = normalizeMoroccanPhone(settings.storefront_contact_whatsapp || "") || businessWhatsapp;
+
+  // Gamme Homme/Femme/Unisexe (migrations/0020), lue à part : sans elle la boutique s'affiche quand même.
+  let audienceRows: Array<{ productId: number; audience: string }> = [];
+  try {
+    audienceRows = (await database.prepare("SELECT product_id AS productId, audience FROM storefront_product_settings WHERE audience <> ''").all<{ productId: number; audience: string }>()).results || [];
+  } catch {
+    audienceRows = [];
+  }
+  const audienceByProduct = new Map(audienceRows.map((row) => [Number(row.productId), normalizeAudience(row.audience)]));
+
+  const publicProducts = products.flatMap((product) => {
+    const available = product.availabilityMode !== "out_of_stock";
+    const images = (mediaByOwner.get(`product:${product.id}`) || []).slice(0, 6);
+    const salePrice = Math.max(0, Number(product.salePrice) || 0);
+    // La boutique publique n'affiche jamais une fiche incomplète : la publication
+    // reste manuelle et une vraie photo + un nom + un prix sont requis.
+    if (!images.length || !product.name.trim() || salePrice <= 0) return [];
+    return [{
+      id: product.id,
+      kind: "product" as const,
+      productCode: product.productCode,
+      name: product.name,
+      category: publicCategory(product.category),
+      salePrice,
+      comparePrice: 0,
+      badge: product.badge,
+      description: product.description,
+      availability: available ? "Disponible à la commande" : "Indisponible",
+      available,
+      lowStock: false,
+      images,
+      audience: audienceByProduct.get(product.id) || "",
+    }];
+  });
+
+  const publicPromotions: StorefrontPromotion[] = promotionRows.map((promotion) => ({
+    id: Number(promotion.id) || 0,
+    name: promotion.name?.trim() || "",
+    code: promotion.code?.trim() || "",
+    description: promotion.description?.trim() || "",
+    ruleType: promotion.ruleType,
+    percentValue: Math.max(0, Math.min(100, Number(promotion.percentValue) || 0)),
+    minimumQuantity: Math.max(1, Math.floor(Number(promotion.minimumQuantity) || 1)),
+    buyQuantity: Math.max(0, Math.floor(Number(promotion.buyQuantity) || 0)),
+    freeQuantity: Math.max(0, Math.floor(Number(promotion.freeQuantity) || 0)),
+    eligibleCategories: normalizeEligibleCategories(promotion.eligibleCategories).map((category) => {
+      if (category === "montres") return "Montres";
+      if (category === "bijoux") return "Bijoux";
+      if (category === "portefeuilles") return "Portefeuilles";
+      return category;
+    }),
+    isActive: Boolean(promotion.isActive),
+    priority: Number(promotion.priority) || 100,
+    displayEnabled: Boolean(promotion.displayEnabled),
+    badge: promotion.badge?.trim() || "OFFRE",
+    ctaLabel: promotion.ctaLabel?.trim() || "Voir les produits",
+    imageUrl: mediaByOwner.get(`promotion:${promotion.id}`)?.[0] || "",
+  })).filter((promotion) => promotion.name && promotion.code);
+
+  const publicOffers = offers.flatMap((offer) => {
+    const components = itemsByOffer.get(offer.id) || [];
+    if (!components.length || components.some((item) => excludedPublicCategories.has(item.category) || item.archivedAt)) return [];
+    const available = components.every((item) => item.availabilityMode !== "out_of_stock");
+    const images = (mediaByOwner.get(`offer:${offer.id}`) || []).slice(0, 6);
+    const salePrice = Math.max(0, Number(offer.price) || 0);
+    if (!images.length || !offer.name.trim() || salePrice <= 0) return [];
+    return [{
+      id: offer.id,
+      kind: "offer" as const,
+      productCode: `PACK-${offer.id}`,
+      name: offer.name,
+      category: "Packs & offres",
+      salePrice,
+      comparePrice: Math.max(0, Number(offer.comparePrice) || 0),
+      badge: offer.badge,
+      description: offer.description,
+      availability: available ? "Disponible à la commande" : "Indisponible",
+      available,
+      lowStock: false,
+      images,
+    }];
+  });
+
+  const categories = Array.from(new Set([
+    ...publicProducts.map((product) => product.category),
+    ...(publicOffers.length ? ["Packs & offres"] : []),
+  ]));
+
+  const brand = settings.storefront_brand_name?.trim() || settings.account_name?.trim() || "YAJI MOVE";
+  const announcement = deliveryCopy(settings.storefront_announcement, "fr", "announcement");
+  const heroTitle = heroCopy(settings.storefront_hero_title, "fr", "title");
+  const heroText = heroCopy(settings.storefront_hero_text, "fr", "text");
+  const shippingNote = deliveryCopy(settings.storefront_shipping_note, "fr", "shippingNote");
+  const configuredPromoOfferId = Math.max(0, Number(settings.storefront_promo_offer_id) || 0);
+  const promoOfferId = publicOffers.some((offer) => offer.id === configuredPromoOfferId) ? configuredPromoOfferId : null;
+  const promotionBanner = {
+    enabled: settings.storefront_promo_enabled === "1",
+    badge: settings.storefront_promo_badge?.trim() || "OFFRE",
+    title: settings.storefront_promo_title?.trim() || "",
+    text: settings.storefront_promo_text?.trim() || "",
+    ctaLabel: settings.storefront_promo_cta_label?.trim() || "Voir l’offre",
+    offerId: promoOfferId,
+  };
+
+  const marketingSections = marketingRows.flatMap((section) => {
+    const target = ["offers", "catalogue", "Montres", "Bijoux", "Portefeuilles"].includes(section.target) ? section.target : "offers";
+    const placement = ["after_categories", "before_catalogue", "before_contact"].includes(section.placement) ? section.placement : "after_categories";
+    const title = section.title?.trim() || "";
+    if (!title) return [];
+    return [{
+      id: section.id,
+      eyebrow: section.eyebrow?.trim() || "",
+      title,
+      body: section.body?.trim() || "",
+      badge: section.badge?.trim() || "",
+      ctaLabel: section.ctaLabel?.trim() || "Voir",
+      target: target as "offers" | "catalogue" | "Montres" | "Bijoux" | "Portefeuilles",
+      placement: placement as "after_categories" | "before_catalogue" | "before_contact",
+      imageUrl: mediaByOwner.get(`marketing:${section.id}`)?.[0] || "",
+    }];
+  });
+
+  const reviews = reviewRows.flatMap((review) => {
+    const name = review.name?.trim() || "";
+    const body = review.body?.trim() || "";
+    const imageUrl = mediaByOwner.get(`review:${review.id}`)?.[0] || "";
+    // Un avis s'affiche s'il a un texte OU une capture (avis WhatsApp en image).
+    if (!name || (!body && !imageUrl)) return [];
+    return [{
+      id: review.id,
+      name,
+      city: review.city?.trim() || "",
+      rating: Math.max(1, Math.min(5, Math.round(Number(review.rating) || 5))),
+      body,
+      productId: review.productId ? Number(review.productId) : null,
+      source: review.source?.trim() || "",
+      date: (review.reviewDate || review.createdAt || "").slice(0, 10),
+      imageUrl,
+    }];
+  });
+
+  return {
+    brand,
+    announcement,
+    heroTitle,
+    heroText,
+    shippingNote,
+    metaPixelId: settings.storefront_meta_pixel_id?.trim() || "",
+    promotionBanner,
+    marketingSections,
+    reviews,
+    giftBox: (() => { const box = giftBoxFromSettings(settings); return { enabled: box.enabled, label: box.label, price: box.price, text: box.text }; })(),
+    logoUrl,
+    heroImageUrl,
+    whatsapp: contactWhatsapp,
+    contactWhatsapp,
+    brandStrip: brandStrip(settings.storefront_brand_strip),
+    localized: {
+      fr: { announcement, heroTitle, heroText, shippingNote, aboutTitle: aboutCopy(settings.storefront_about_title, "fr", "title"), aboutText: aboutCopy(settings.storefront_about_text, "fr", "text") },
+      ar: {
+        announcement: deliveryCopy(settings.storefront_announcement_ar, "ar", "announcement"),
+        heroTitle: heroCopy(settings.storefront_hero_title_ar, "ar", "title"),
+        heroText: heroCopy(settings.storefront_hero_text_ar, "ar", "text"),
+        aboutTitle: aboutCopy(settings.storefront_about_title_ar, "ar", "title"),
+        aboutText: aboutCopy(settings.storefront_about_text_ar, "ar", "text"),
+        shippingNote: deliveryCopy(settings.storefront_shipping_note_ar, "ar", "shippingNote"),
+      },
+      en: {
+        announcement: deliveryCopy(settings.storefront_announcement_en, "en", "announcement"),
+        heroTitle: heroCopy(settings.storefront_hero_title_en, "en", "title"),
+        heroText: heroCopy(settings.storefront_hero_text_en, "en", "text"),
+        aboutTitle: aboutCopy(settings.storefront_about_title_en, "en", "title"),
+        aboutText: aboutCopy(settings.storefront_about_text_en, "en", "text"),
+        shippingNote: deliveryCopy(settings.storefront_shipping_note_en, "en", "shippingNote"),
+      },
+    },
+    products: publicProducts,
+    offers: publicOffers,
+    promotions: publicPromotions,
+    categories,
+  };
+}

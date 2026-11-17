@@ -1,0 +1,58 @@
+// YAJI MOVE release: storefront-tabs-static-v2
+const APP_URL = "/?source=mobile-app";
+const APP_ICON = "/yaji-gestion-192.png";
+
+self.addEventListener("install", () => self.skipWaiting());
+self.addEventListener("activate", (event) => event.waitUntil(self.clients.claim()));
+
+// Réseau uniquement : aucune donnée du dashboard privé n'est conservée en cache.
+self.addEventListener("fetch", (event) => {
+  if (event.request.method !== "GET") return;
+  const requestUrl = new URL(event.request.url);
+  if (requestUrl.origin !== self.location.origin) return;
+
+  // Quand la boutique est ouverte depuis l'app installée, forcer un vrai
+  // chargement réseau du document pour éviter qu'un ancien HTML/CSS reste
+  // affiché dans le contexte PWA iOS.
+  if (requestUrl.pathname === "/boutique" && event.request.mode === "navigate") {
+    event.respondWith(fetch(event.request, { cache: "no-store" }));
+    return;
+  }
+
+  event.respondWith(fetch(event.request));
+});
+
+self.addEventListener("push", (event) => {
+  let payload = {};
+  try {
+    payload = event.data ? event.data.json() : {};
+  } catch {
+    payload = {};
+  }
+
+  const title = payload.title || "Nouvelle commande YAJI MOVE";
+  const body = payload.body || "Une nouvelle commande vient d’arriver. Ouvre YAJI MOVE Gestion pour la traiter.";
+  const target = payload.url || "/?newOrder=1&source=notification";
+
+  event.waitUntil(self.registration.showNotification(title, {
+    body,
+    icon: APP_ICON,
+    badge: APP_ICON,
+    tag: payload.tag || `yaji-move-order-${Date.now()}`,
+    renotify: true,
+    data: { url: target },
+  }));
+});
+
+self.addEventListener("notificationclick", (event) => {
+  event.notification.close();
+  const target = event.notification.data?.url || APP_URL;
+  event.waitUntil((async () => {
+    const windows = await self.clients.matchAll({ type: "window", includeUncontrolled: true });
+    for (const client of windows) {
+      if ("navigate" in client) await client.navigate(target);
+      if ("focus" in client) return client.focus();
+    }
+    return self.clients.openWindow(target);
+  })());
+});

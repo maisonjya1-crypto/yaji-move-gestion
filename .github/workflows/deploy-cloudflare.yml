@@ -1,0 +1,64 @@
+name: Deploy YAJI MOVE to Cloudflare
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+concurrency:
+  group: yaji-move-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Vérifier la base D1 YAJI MOVE
+        run: |
+          if grep -q "A_REMPLACER_PAR_ID_BASE_D1_YAJI" wrangler.jsonc; then
+            echo "::error::Ajoute l'ID de la base D1 yaji-move-pilotage-db dans wrangler.jsonc avant la mise en ligne."
+            exit 1
+          fi
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: "22.13.0"
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Build
+        run: npm run build
+
+      - name: Apply D1 migrations
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: d1 migrations apply yaji-move-pilotage-db --remote
+
+      - name: Deploy Worker
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: deploy
+
+      - name: Verify production
+        continue-on-error: true
+        env:
+          REQUIRE_REFERENCE_BLACK_DESIGN: "1"
+        run: node scripts/smoke-production.mjs

@@ -1,0 +1,278 @@
+import { ensureStorefrontGoogleSheetsSyncTriggers } from "./google-sheets-sync";
+
+export type StorefrontProductSettingRow = {
+  productId: number;
+  productCode: string;
+  internalName: string;
+  category: string;
+  stockQuantity: number;
+  internalPrice: number;
+  publicName: string;
+  publicPrice: number;
+  isVisible: number;
+  availabilityMode: string;
+  badge: string;
+  description: string;
+  sortOrder: number;
+};
+
+export type StorefrontOfferRow = {
+  id: number;
+  name: string;
+  description: string;
+  price: number;
+  comparePrice: number;
+  badge: string;
+  isActive: number;
+  sortOrder: number;
+  createdAt: string;
+  updatedAt: string | null;
+};
+
+export type StorefrontOfferItemRow = {
+  offerId: number;
+  productId: number;
+  quantity: number;
+};
+
+export type StorefrontPromotionRow = {
+  id: number;
+  name: string;
+  code: string;
+  description: string;
+  ruleType: "second_item_percent" | "percent_items" | "buy_x_get_y_free";
+  percentValue: number;
+  minimumQuantity: number;
+  buyQuantity: number;
+  freeQuantity: number;
+  eligibleCategories: string;
+  isActive: number;
+  priority: number;
+  displayEnabled: number;
+  badge: string;
+  ctaLabel: string;
+  createdAt: string;
+  updatedAt: string | null;
+};
+
+export type StorefrontMarketingSectionRow = {
+  id: number;
+  eyebrow: string;
+  title: string;
+  body: string;
+  badge: string;
+  ctaLabel: string;
+  target: string;
+  placement: string;
+  isActive: number;
+  sortOrder: number;
+  createdAt: string;
+  updatedAt: string | null;
+};
+
+export type StorefrontMediaRow = {
+  id: number;
+  ownerType: string;
+  ownerId: number;
+  kind: string;
+  mimeType: string;
+  sortOrder: number;
+  createdAt: string;
+};
+
+const PUBLIC_CATEGORIES_SQL = "'Électronique', 'Electronique', 'Boîtes', 'Boites'";
+const MANUAL_CATALOG_FLAG = "storefront_manual_catalog_initialized_v1";
+
+async function ensureManualCatalog(database: D1Database) {
+  const flag = await database.prepare("SELECT value FROM settings WHERE key = ? LIMIT 1").bind(MANUAL_CATALOG_FLAG).first<{ value: string }>();
+
+  if (!flag?.value) {
+    // Première migration : conserve exactement les produits actuellement exposables,
+    // puis passe la boutique en publication manuelle pour les futurs articles du stock.
+    await database.prepare(`
+      INSERT OR IGNORE INTO storefront_product_settings (
+        product_id, public_name, public_price, is_visible, availability_mode,
+        badge, description, sort_order, updated_at
+      )
+      SELECT id, name, sale_price, 1, 'available', '', '', 0, CURRENT_TIMESTAMP
+      FROM products
+      WHERE category NOT IN (${PUBLIC_CATEGORIES_SQL})
+      AND archived_at IS NULL
+    `).run();
+    await database.prepare(`
+      INSERT INTO settings (key, value, updated_at) VALUES (?, '1', CURRENT_TIMESTAMP)
+      ON CONFLICT(key) DO UPDATE SET value = '1', updated_at = CURRENT_TIMESTAMP
+    `).bind(MANUAL_CATALOG_FLAG).run();
+    return;
+  }
+
+  // Après la migration, tout nouveau produit interne devient seulement une suggestion.
+  // Il n'est jamais publié tant que l'utilisateur ne l'active pas depuis le CMS public.
+  await database.prepare(`
+    INSERT OR IGNORE INTO storefront_product_settings (
+      product_id, public_name, public_price, is_visible, availability_mode,
+      badge, description, sort_order, updated_at
+    )
+    SELECT id, name, sale_price, 0, 'available', '', '', 0, CURRENT_TIMESTAMP
+    FROM products
+    WHERE category NOT IN (${PUBLIC_CATEGORIES_SQL})
+      AND archived_at IS NULL
+  `).run();
+}
+
+export async function ensureStorefrontCms(database: D1Database) {
+  await database.batch([
+    database.prepare(`
+      CREATE TABLE IF NOT EXISTS storefront_product_settings (
+        product_id INTEGER PRIMARY KEY NOT NULL,
+        public_name TEXT DEFAULT '' NOT NULL,
+        public_price REAL DEFAULT 0 NOT NULL,
+        is_visible INTEGER DEFAULT 1 NOT NULL,
+        availability_mode TEXT DEFAULT 'auto' NOT NULL,
+        badge TEXT DEFAULT '' NOT NULL,
+        description TEXT DEFAULT '' NOT NULL,
+        sort_order INTEGER DEFAULT 0 NOT NULL,
+        updated_at TEXT DEFAULT CURRENT_TIMESTAMP NOT NULL
+      )
+    `),
+    database.prepare(`
+      CREATE TABLE IF NOT EXISTS storefront_offers (
+        id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+        name TEXT NOT NULL,
+        description TEXT DEFAULT '' NOT NULL,
+        price REAL NOT NULL,
+        compare_price REAL DEFAULT 0 NOT NULL,
+        badge TEXT DEFAULT '' NOT NULL,
+        is_active INTEGER DEFAULT 1 NOT NULL,
+        sort_order INTEGER DEFAULT 0 NOT NULL,
+        created_at TEXT DEFAULT CURRENT_TIMESTAMP NOT NULL,
+        updated_at TEXT
+      )
+    `),
+    database.prepare(`
+      CREATE TABLE IF NOT EXISTS storefront_offer_items (
+        offer_id INTEGER NOT NULL,
+        product_id INTEGER NOT NULL,
+        quantity INTEGER DEFAULT 1 NOT NULL,
+        PRIMARY KEY (offer_id, product_id)
+      )
+    `),
+    database.prepare(`
+      CREATE TABLE IF NOT EXISTS storefront_media (
+        id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+        owner_type TEXT NOT NULL,
+        owner_id INTEGER DEFAULT 0 NOT NULL,
+        kind TEXT DEFAULT 'gallery' NOT NULL,
+        mime_type TEXT NOT NULL,
+        data_base64 TEXT NOT NULL,
+        byte_size INTEGER DEFAULT 0 NOT NULL,
+        sort_order INTEGER DEFAULT 0 NOT NULL,
+        created_at TEXT DEFAULT CURRENT_TIMESTAMP NOT NULL
+      )
+    `),
+    database.prepare("CREATE INDEX IF NOT EXISTS storefront_media_owner_idx ON storefront_media (owner_type, owner_id, sort_order, id)"),
+    database.prepare("CREATE INDEX IF NOT EXISTS storefront_offer_items_offer_idx ON storefront_offer_items (offer_id)"),
+  ]);
+
+  await ensureStorefrontGoogleSheetsSyncTriggers(database);
+
+  const defaults = [
+    ["storefront_brand_name", "YAJI MOVE"],
+    ["storefront_announcement", "Livraison partout au Maroc · paiement à la livraison"],
+    ["storefront_hero_title", "Les pièces que vous aimez, simplement livrées chez vous."],
+    ["storefront_hero_text", "Choisissez vos articles, validez votre commande en ligne et payez à la livraison. Notre équipe vous contacte ensuite pour confirmer."],
+    ["storefront_shipping_note", "Livraison partout au Maroc. Les frais de livraison vous sont confirmés par notre équipe avant l’envoi."],
+    ["storefront_meta_pixel_id", ""],
+    ["storefront_promo_enabled", "0"],
+    ["storefront_promo_badge", "OFFRE"],
+    ["storefront_promo_title", ""],
+    ["storefront_promo_text", ""],
+    ["storefront_promo_cta_label", "Voir l’offre"],
+    ["storefront_promo_offer_id", ""],
+    ["storefront_contact_whatsapp", ""],
+    ["storefront_brand_strip", "YAJI MOVE|MONTRES|BIJOUX|PORTEFEUILLES|PACKS"],
+    ["storefront_announcement_ar", "التوصيل إلى جميع أنحاء المغرب · الدفع عند الاستلام"],
+    ["storefront_announcement_en", "Delivery across Morocco · pay on delivery"],
+    ["storefront_hero_title_ar", "قطع أنيقة تحبها، تصل إليك بكل بساطة."],
+    ["storefront_hero_title_en", "Pieces you love, delivered simply to your door."],
+    ["storefront_hero_text_ar", "اختر منتجاتك وأرسل طلبك عبر الموقع. سيتواصل معك فريقنا لتأكيد الطلب قبل التجهيز، والدفع عند الاستلام."],
+    ["storefront_hero_text_en", "Choose your items and place your order online. Our team will contact you to confirm it before preparation, with cash on delivery."],
+    ["storefront_shipping_note_ar", "التوصيل إلى جميع أنحاء المغرب. يؤكد لك فريقنا مصاريف التوصيل قبل الإرسال."],
+    ["storefront_shipping_note_en", "Delivery across Morocco. Our team confirms the delivery fee before shipping."],
+  ];
+  await database.batch(defaults.map(([key, value]) => database.prepare(`
+    INSERT INTO settings (key, value, updated_at)
+    VALUES (?, ?, CURRENT_TIMESTAMP)
+    ON CONFLICT(key) DO NOTHING
+  `).bind(key, value)));
+
+  await ensureManualCatalog(database);
+}
+
+export async function getStorefrontPromotions(database: D1Database, activeOnly = false) {
+  const where = activeOnly ? "WHERE is_active = 1" : "";
+  try {
+    return (await database.prepare(`
+      SELECT id, name, code, description,
+             rule_type AS ruleType,
+             percent_value AS percentValue,
+             minimum_quantity AS minimumQuantity,
+             buy_quantity AS buyQuantity,
+             free_quantity AS freeQuantity,
+             eligible_categories AS eligibleCategories,
+             is_active AS isActive,
+             priority,
+             display_enabled AS displayEnabled,
+             badge,
+             cta_label AS ctaLabel,
+             created_at AS createdAt,
+             updated_at AS updatedAt
+      FROM storefront_promotions
+      ${where}
+      ORDER BY priority, id
+    `).all<StorefrontPromotionRow>()).results;
+  } catch (error) {
+    try {
+      const legacy = (await database.prepare(`
+        SELECT id, name, code, description,
+               rule_type AS ruleType,
+               percent_value AS percentValue,
+               minimum_quantity AS minimumQuantity,
+               buy_quantity AS buyQuantity,
+               free_quantity AS freeQuantity,
+               eligible_categories AS eligibleCategories,
+               is_active AS isActive,
+               priority,
+               created_at AS createdAt,
+               updated_at AS updatedAt
+        FROM storefront_promotions
+        ${where}
+        ORDER BY priority, id
+      `).all<Omit<StorefrontPromotionRow, "displayEnabled" | "badge" | "ctaLabel">>()).results;
+      return legacy.map((row) => ({
+        ...row,
+        displayEnabled: 1,
+        badge: "OFFRE",
+        ctaLabel: "Voir les produits",
+      }));
+    } catch {
+      // Compatibility for a worker started before migration 0016 has been applied.
+      console.warn("YAJI MOVE promotions table unavailable", error);
+      return [];
+    }
+  }
+}
+
+export async function getStorefrontMedia(database: D1Database, ownerType?: string, ownerId?: number) {
+  const where = ownerType ? "WHERE owner_type = ? AND owner_id = ?" : "";
+  const statement = database.prepare(`
+    SELECT id, owner_type AS ownerType, owner_id AS ownerId, kind,
+           mime_type AS mimeType, sort_order AS sortOrder, created_at AS createdAt
+    FROM storefront_media
+    ${where}
+    ORDER BY sort_order, id
+  `);
+  return ownerType
+    ? (await statement.bind(ownerType, ownerId || 0).all<StorefrontMediaRow>()).results
+    : (await statement.all<StorefrontMediaRow>()).results;
+}

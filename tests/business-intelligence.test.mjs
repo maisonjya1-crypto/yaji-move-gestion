@@ -1,0 +1,107 @@
+import assert from "node:assert/strict";
+import { readFile } from "node:fs/promises";
+import test from "node:test";
+
+const dashboard = await readFile(new URL("../app/dashboard-client.tsx", import.meta.url), "utf8");
+const api = await readFile(new URL("../app/api/data/route.ts", import.meta.url), "utf8");
+const schema = await readFile(new URL("../db/schema.ts", import.meta.url), "utf8");
+const meta = await readFile(new URL("../db/meta.ts", import.meta.url), "utf8");
+const allocations = await readFile(new URL("../db/allocations.ts", import.meta.url), "utf8");
+
+test("la recherche est limitée au bloc actif et couvre les principaux blocs métier", () => {
+  assert.match(dashboard, /function SectionSearch/);
+  assert.doesNotMatch(dashboard, /Rechercher partout/);
+  for (const source of ["data.orders", "data.products", "data.customers", "data.purchases", "data.ads", "data.capital", "data.trash"]) assert.match(dashboard, new RegExp(source.replace(".", "\\.")));
+});
+
+test("le rapport sépare les comptes physiques, transporteurs et créances et distingue la marge commande du bénéfice global", () => {
+  assert.match(dashboard, /function ReportsPage/);
+  assert.match(dashboard, /Caisse \/ espèces/);
+  assert.match(dashboard, /Banque \/ carte/);
+  assert.match(dashboard, /Autres comptes/);
+  assert.match(dashboard, /Argent transporteurs/);
+  assert.match(dashboard, /Créances en cours/);
+  assert.match(dashboard, /Marge par commande avant dépenses globales/);
+  assert.match(dashboard, /dépense Meta réelle et les charges d’exploitation/);
+});
+
+test("chaque commande peut être liée à une campagne et contactée par WhatsApp", () => {
+  assert.match(schema, /campaign: text\("campaign"\)/);
+  assert.match(api, /selectedCampaign/);
+  assert.match(dashboard, /https:\/\/wa\.me/);
+  assert.match(dashboard, /Contacter sur WhatsApp/);
+});
+
+test("l'import tableur est borné et met à jour le stock", () => {
+  assert.match(api, /parsedRows\.length > 200/);
+  assert.match(api, /payload\.action === "importOrders"/);
+  assert.match(api, /stockQuantity: sql/);
+  assert.match(dashboard, /modele-commandes-yaji-move\.csv/);
+});
+
+test("Meta Ads utilise uniquement des secrets serveur et une version API configurée", () => {
+  assert.match(meta, /META_ACCESS_TOKEN/);
+  assert.match(meta, /META_AD_ACCOUNT_ID/);
+  assert.match(meta, /META_API_VERSION/);
+  assert.match(meta, /graph\.facebook\.com/);
+  assert.doesNotMatch(dashboard, /META_ACCESS_TOKEN/);
+});
+
+test("Meta Ads détecte la devise du compte et convertit dépenses et revenus en MAD", () => {
+  assert.match(meta, /fields: "currency"/);
+  assert.match(meta, /open\.er-api\.com\/v6\/latest/);
+  assert.match(meta, /nativeSpend \* fx\.rate/);
+  assert.match(meta, /actionTotal\(row\.action_values/);
+  assert.match(meta, /row\.nativeRevenue \* fx\.rate/);
+  assert.match(dashboard, /converties en MAD/);
+});
+
+test("réinvestissement, salaire et fonds d’urgence sont des écritures liées aux commandes", () => {
+  assert.match(allocations, /order_id/);
+  assert.match(allocations, /Réinvestissement/);
+  assert.match(allocations, /Salaire personnel/);
+  assert.match(allocations, /Fonds d’urgence/);
+  assert.match(allocations, /is_automatic = 1/);
+});
+
+
+test("le pilotage financier passe par le moteur financier central", async () => {
+  const finance = await readFile(new URL("../lib/finance.ts", import.meta.url), "utf8");
+  assert.match(dashboard, /calculateBusinessFinance\(\{/);
+  assert.match(finance, /calculateBusinessFinanceFromTotals/);
+  assert.match(finance, /- amount\(input\.adSpend\)/);
+  assert.match(finance, /- amount\(input\.operatingExpenses\)/);
+  assert.match(finance, /- amount\(input\.unpaidOperatingExpenses\)/);
+  assert.match(dashboard, /Réinvestissable maintenant/);
+  assert.match(dashboard, /Charges à payer/);
+  assert.match(dashboard, /Réserve protégée/);
+});
+
+test("la rentabilité produit inclut les packs et commandes multi-produits sans doubler le total", () => {
+  assert.match(dashboard, /quantityForProduct/);
+  assert.match(dashboard, /movement\.movementType === "Commande"/);
+  assert.match(dashboard, /orderShareForProduct/);
+  assert.match(dashboard, /order\.productCost \+ order\.shippingCost \+ order\.fees/);
+  assert.doesNotMatch(dashboard, /costs \+= \(order\.productCost \+ order\.shippingCost \+ order\.adCost \+ order\.fees\)/);
+});
+
+test("les rapports surveillent les fournisseurs à payer et le stock dormant", () => {
+  assert.match(dashboard, /Suivi des engagements/);
+  assert.match(dashboard, /paiement fournisseur à prévoir/);
+  assert.match(dashboard, /stock dormant/);
+  assert.match(dashboard, /sans sortie depuis au moins 45 jours/);
+});
+
+test("les montants décimaux sont conservés dans les commandes et les autres modules financiers", () => {
+  assert.match(api, /const saleAmount = moneyValue\(payload\.saleAmount/);
+  assert.match(api, /const selectedShippingCost = isStoreSale \? 0 : moneyValue\(payload\.shippingCost\)/);
+  assert.match(api, /moneyValue\(payload\.adCost\)/);
+  assert.match(api, /moneyValue\(payload\.fees\)/);
+  assert.match(api, /moneyValue\(payload\.returnCost\)/);
+  assert.match(api, /const unitCost = moneyValue\(payload\.unitCost\)/);
+  assert.match(api, /spend: moneyValue\(payload\.spend\), revenue: moneyValue\(payload\.revenue\)/);
+  assert.match(api, /const amount = moneyValue\(payload\.amount\)/);
+  assert.doesNotMatch(api, /numberValue\(payload\.(?:saleAmount|shippingCost|adCost|fees|returnCost)\)/);
+  assert.match(dashboard, /name="saleAmount"[^>]*step="0\.01"/);
+  assert.match(dashboard, /name="returnCost"[^>]*step="0\.01"/);
+});
