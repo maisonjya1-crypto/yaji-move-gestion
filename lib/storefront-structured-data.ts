@@ -18,7 +18,7 @@ export function storefrontStructuredData(catalog: StorefrontCatalog | null) {
     logo,
     image: absoluteUrl("/brand/og-yaji-move.jpg"),
     slogan: "Yallah, aji move",
-    description: "Montres, bijoux, portefeuilles et packs cadeaux livrés partout au Maroc, paiement à la livraison.",
+    description: "Raquettes, balles et accessoires de padel livrés partout au Maroc, paiement à la livraison.",
     areaServed: { "@type": "Country", name: "Maroc" },
     currenciesAccepted: "MAD",
     paymentAccepted: "Paiement à la livraison",

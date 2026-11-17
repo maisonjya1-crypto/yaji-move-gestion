@@ -29,7 +29,7 @@ assert.match(orderRoute, /status,[^]*'En attente'/);
 const publicPage = await readText("app/boutique/page.tsx");
 assert.match(publicPage, /StorefrontClientV3/);
 assert.match(publicPage, /storefront_manual_catalog_initialized_v1/);
-assert.match(publicPage, /yaji-move-luxe-v7/);
+assert.match(publicPage, /yaji-move-sport-v1/);
 assert.match(publicPage, /<BrandIntro \/>/);
 assert.match(publicPage, /application\/ld\+json/);
 assert.match(publicPage, /mj-shop-root/);
@@ -60,7 +60,7 @@ assert.match(css, /safe-area-inset-bottom/);
 assert.match(css, /prefers-reduced-motion/);
 
 const smoke = await readText("scripts/smoke-production.mjs");
-assert.match(smoke, /yaji-move-luxe-v7/);
+assert.match(smoke, /yaji-move-sport-v1/);
 assert.match(smoke, /REQUIRE_REFERENCE_BLACK_DESIGN/);
 
 const deployWorkflow = await readText(".github/workflows/deploy-cloudflare.yml");

@@ -18,32 +18,30 @@ test("l'ouverture est rendue côté serveur, une fois par session, passable et c
   assert.match(intro, /addEventListener\("click",skip\)/);
   assert.match(intro, /setTimeout\(function\(\)\{set\("off"\)\},3400\)/);
   assert.match(intro, /aria-hidden="true"/);
-  for (const piece of ["Montre", "Bague", "Portefeuille", "Collier", "Bracelet"]) assert.ok(intro.includes(`label: "${piece}"`), piece);
+  assert.match(intro, /<PadelScene className="mj-intro-court" \/>/);
+  assert.match(intro, /Yallah, aji move/);
   // L'animation se termine seule en CSS même si le script ne s'exécute pas.
   assert.match(css, /\.mj-intro \{[^}]*animation: mj-intro-exit[^}]*forwards/);
   assert.match(css, /@keyframes mj-intro-exit \{ to \{ opacity: 0; visibility: hidden;/);
   assert.match(css, /@media \(prefers-reduced-motion: reduce\) \{\n  \.mj-intro \{ display: none; \}/);
 });
 
-test("l'en-tête utilise l'icône JY et le pied de page le logo JIYA", () => {
-  assert.match(client, /import \{ JY_MARK \} from "\.\/brand-marks"/);
+test("l'en-tête utilise l'icône YJ et le pied de page le logo YAJI MOVE", () => {
   assert.match(client, /<JyMark \/>\n\s*<span className="mj-wordmark">/);
+  assert.match(client, /src="\/brand\/jy-mark\.svg"/);
   assert.match(client, /src="\/brand\/yaji-move-logo\.svg"/);
-  const marks = read("app/boutique/brand-marks.ts");
-  assert.match(marks, /export const JIYA_LOGO/);
-  assert.match(marks, /export const JY_MARK/);
 });
 
-test("le thème onyx et or rosé définit ses couleurs une seule fois", () => {
-  for (const token of ["--onyx: #0e0c0c", "--ivory: #f3ede4", "--gold: #cfa995", "--pearl: #ece6de"]) assert.ok(css.includes(token), token);
-  assert.match(css, /family=Noto\+Serif\+Display/);
-  assert.match(css, /\.mj-shop\[dir="rtl"\] \{ --display: "Amiri"/);
-  assert.match(css, /\.mj-dial-ring \{/);
+test("le thème noir et vert fluo définit ses couleurs une seule fois", () => {
+  for (const token of ["--onyx: #0a0a0a", "--ivory: #f5f5f2", "--gold: #d4ff3a", "--pearl: #eef0e8"]) assert.ok(css.includes(token), token);
+  assert.match(css, /family=Anton/);
+  assert.match(css, /\.mj-shop\[dir="rtl"\] \{ --display: "Tajawal"/);
+  assert.match(css, /@keyframes mj-ball-track \{/);
 });
 
 test("Google : titre, description, image de partage, favicon et adresse canonique de la boutique", () => {
   assert.match(layout, /title: \{ default: title/);
-  assert.match(layout, /Montres, bijoux et portefeuilles au Maroc/);
+  assert.match(layout, /Padel et sport au Maroc/);
   assert.match(layout, /alternates: \{ canonical: STOREFRONT_URL \}/);
   assert.match(layout, /og-yaji-move\.jpg/);
   assert.match(layout, /favicon-jy\.svg/);
@@ -91,16 +89,15 @@ test("les données structurées décrivent la boutique et ses vrais produits, sa
   assert.match(page, /type="application\/ld\+json"/);
 });
 
-test("l'accueil montre le logo JIYA dans son cadran et la vitrine photos du logiciel juste dessous", () => {
-  assert.match(client, /src="\/brand\/yaji-move-emblem\.svg"/);
-  assert.doesNotMatch(client, /mj-dial-satellite/);
+test("l'accueil montre le terrain de padel animé et la vitrine photos du logiciel juste dessous", () => {
+  assert.match(client, /<PadelScene \/>/);
   const hero = client.indexOf('<section className="mj-hero">');
   const showcase = client.indexOf('renderMarketingSections("after_categories")');
   const deal = client.indexOf('<section className="mj-deal" id="promotions">');
   assert.ok(hero > 0 && hero < showcase && showcase < deal, "ordre : accueil, vitrine, promo");
   assert.match(client, /<div className="mj-tile-caption">/);
   assert.match(css, /\.mj-tile-media img \{[^}]*height: auto;[^}]*object-fit: contain/);
-  assert.match(read("public/brand/yaji-move-emblem.svg"), /prefers-reduced-motion: reduce/);
+  assert.match(css, /@media \(prefers-reduced-motion: reduce\)/);
 });
 
 test("la bulle WhatsApp reste dans le coin et ne monte que si la barre panier est affichée", () => {

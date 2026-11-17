@@ -1,6 +1,6 @@
 const base = (process.env.YAJI_MOVE_PRODUCTION_URL || "https://yaji-move-gestion.maisonjya1.workers.dev").replace(/\/$/, "");
 const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
-const requiredStorefrontMarker = "yaji-move-luxe-v7";
+const requiredStorefrontMarker = "yaji-move-sport-v1";
 
 async function fetchWithRetry(path, options = {}) {
   let lastError;

@@ -4,9 +4,9 @@
 type Lang = "fr" | "ar" | "en";
 
 export const HERO_DEFAULTS: Record<Lang, { title: string; text: string }> = {
-  fr: { title: "Montres, bijoux et portefeuilles.", text: "À offrir ou à s'offrir. Livrés partout au Maroc, payés à la réception." },
-  ar: { title: "ساعات، مجوهرات ومحافظ.", text: "للإهداء أو لنفسك. توصيل إلى جميع أنحاء المغرب والدفع عند الاستلام." },
-  en: { title: "Watches, jewellery and wallets.", text: "To give or to keep. Delivered across Morocco, paid on delivery." },
+  fr: { title: "Yallah, aji move.", text: "Raquettes, balles et accessoires de padel. Livrés partout au Maroc, payés à la réception." },
+  ar: { title: "يلا، أجي تحرك.", text: "مضارب وكرات وإكسسوارات البادل. توصيل إلى جميع أنحاء المغرب والدفع عند الاستلام." },
+  en: { title: "Yallah, aji move.", text: "Padel rackets, balls and gear. Delivered across Morocco, paid on delivery." },
 };
 
 const LEGACY_DEFAULTS: Record<Lang, { title: string; text: string }> = {
@@ -21,20 +21,20 @@ export function heroCopy(stored: string | null | undefined, lang: Lang, field: "
   return value;
 }
 
-// « À propos de nous » : texte par défaut dans le ton de la charte (doux, élégant, phrases brèves).
+// « À propos de nous » : texte par défaut dans le ton de la marque (direct, sportif, phrases brèves).
 // À personnaliser dans le logiciel → Boutique → Identité → À propos de nous.
 export const ABOUT_DEFAULTS: Record<Lang, { title: string; text: string }> = {
   fr: {
-    title: "Le détail qui fait tout.",
-    text: "YAJI MOVE, c'est l'envie de rendre l'élégance simple et accessible. Nous choisissons des montres, des bijoux et des portefeuilles pour leur allure et leur finition : des pièces qui accompagnent un rendez-vous, un cadeau, un instant qui compte.\n\nNotre équipe confirme chaque commande par téléphone avant l'envoi. Nous livrons partout au Maroc et vous payez à la réception.",
+    title: "Bouge. Joue. Recommence.",
+    text: "YAJI MOVE, c'est une marque de sport née au Maroc, avec une idée simple : donner envie de bouger. On commence par le padel, avec du matériel choisi pour bien jouer et un style qui te ressemble, sur le terrain comme en dehors.\n\nNotre équipe confirme chaque commande par téléphone avant l'envoi. Nous livrons partout au Maroc et tu paies à la réception.",
   },
   ar: {
-    title: "التفاصيل تصنع الفرق.",
-    text: "ميزون جيا هي رغبة في جعل الأناقة بسيطة وفي متناول الجميع. نختار الساعات والمجوهرات والمحافظ لجمالها وجودة تشطيبها: قطع ترافق موعدًا، هدية، أو لحظة مهمة.\n\nيؤكد فريقنا كل طلب عبر الهاتف قبل الإرسال. نوصل إلى جميع أنحاء المغرب والدفع عند الاستلام.",
+    title: "تحرك. العب. عاود.",
+    text: "ياجي موف علامة رياضية مغربية بفكرة بسيطة: نعطيك الرغبة في الحركة. نبدأ بالبادل، بمعدات مختارة لتلعب مزيان وبستايل يشبهك داخل الملعب وخارجه.\n\nيؤكد فريقنا كل طلب عبر الهاتف قبل الإرسال. نوصل إلى جميع أنحاء المغرب والدفع عند الاستلام.",
   },
   en: {
-    title: "The detail that makes it.",
-    text: "YAJI MOVE is about making elegance simple and within reach. We choose watches, jewellery and wallets for their look and finish: pieces for a date, a gift, a moment that matters.\n\nOur team confirms every order by phone before shipping. We deliver across Morocco and you pay on delivery.",
+    title: "Move. Play. Repeat.",
+    text: "YAJI MOVE is a sports brand born in Morocco with one simple idea: make you want to move. We start with padel, with gear chosen to play well and a style that fits you, on court and off.\n\nOur team confirms every order by phone before shipping. We deliver across Morocco and you pay on delivery.",
   },
 };
 

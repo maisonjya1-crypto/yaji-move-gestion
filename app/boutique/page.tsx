@@ -10,7 +10,7 @@ import type { StorefrontCatalog } from "./storefront-types";
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
-const STOREFRONT_DEPLOYMENT_MARKER = "yaji-move-luxe-v7";
+const STOREFRONT_DEPLOYMENT_MARKER = "yaji-move-sport-v1";
 
 async function ensureManualCatalogReady() {
   const database = await getRawDb();

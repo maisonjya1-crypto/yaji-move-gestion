@@ -1,7 +1,7 @@
 "use client";
 
 import { FormEvent, useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
-import { JY_MARK } from "./brand-marks";
+import PadelScene from "./padel-scene";
 import { productPath } from "../../lib/product-slug";
 import { frequentlyBoughtWith, pickCartSuggestion, promotionProgress } from "../../lib/cart-suggestion";
 import { giftBoxTotal, matchesAudience, normalizeAudience, type Audience } from "../../lib/storefront-extras";
@@ -97,7 +97,7 @@ const copy: Record<StorefrontLanguage, Copy> = {
     discover: "Découvrir la collection", whatsapp: "WhatsApp", cashOnDelivery: "Paiement à la livraison", confirmation: "Confirmation par notre équipe", moroccoDelivery: "Livraison partout au Maroc",
     weeklyPromo: "PROMO DE LA SEMAINE", weeklyPromoKicker: "Nos offres du moment", bestSellers: "BEST SELLERS", bestSellersKicker: "Les favoris du moment", bestSellerText: "Une sélection de modèles appréciés par nos clients.",
     collections: "NOS COLLECTIONS", collectionsKicker: "Choisissez votre univers", packs: "NOS PACKS", packsKicker: "Des offres pensées pour vous", allProducts: "TOUS NOS MODÈLES",
-    search: "Rechercher", searchPlaceholder: "Montre, portefeuille, référence…", category: "Catégorie", allCategories: "Toutes les catégories", products: "articles", loading: "Chargement du catalogue…",
+    search: "Rechercher", searchPlaceholder: "Raquette, balles, sac, référence…", category: "Catégorie", allCategories: "Toutes les catégories", products: "articles", loading: "Chargement du catalogue…",
     unavailable: "Indisponible", addToCart: "Ajouter au panier", viewProduct: "Voir ce produit", loadMore: "Afficher plus", yourCart: "Votre panier", emptyCart: "Votre panier est vide.", subtotal: "Sous-total", total: "Total", promoSecondItem: "Promotion", promoApplied: "Offre appliquée", promoHint: "Les promotions actives s’appliquent automatiquement, une seule à la fois.", promotionProducts: "Produits concernés par l’offre", clearPromotionFilter: "Voir tout le catalogue", checkout: "Commander",
     continueShopping: "Continuer mes achats", quantity: "Quantité", remove: "Supprimer", orderTitle: "Finaliser la commande", orderSubtitle: "Aucun paiement en ligne. Notre équipe vous contacte pour confirmer.", fullName: "Nom complet", phone: "Téléphone", city: "Ville", address: "Adresse de livraison",
     note: "Note", optional: "facultatif", confirmOrder: "Envoyer ma commande", sending: "Envoi…", orderSuccess: "Commande reçue", orderSuccessText: "Merci. Notre équipe vous contactera pour confirmer la disponibilité et votre commande avant préparation.", orderRef: "Référence", close: "Fermer", orderFailed: "Impossible d’enregistrer la commande. Vérifiez vos informations puis réessayez.",
@@ -109,7 +109,7 @@ const copy: Record<StorefrontLanguage, Copy> = {
     discover: "اكتشف المجموعة", whatsapp: "واتساب", cashOnDelivery: "الدفع عند الاستلام", confirmation: "تأكيد الطلب من فريقنا", moroccoDelivery: "التوصيل إلى جميع أنحاء المغرب",
     weeklyPromo: "عرض الأسبوع", weeklyPromoKicker: "عروضنا الحالية", bestSellers: "الأكثر طلبًا", bestSellersKicker: "اختيارات العملاء", bestSellerText: "مجموعة مختارة من الموديلات المفضلة لدى عملائنا.",
     collections: "مجموعاتنا", collectionsKicker: "اختر ما يناسبك", packs: "الباقات", packsKicker: "عروض مختارة لك", allProducts: "جميع الموديلات",
-    search: "بحث", searchPlaceholder: "ساعة، محفظة، مرجع…", category: "الفئة", allCategories: "جميع الفئات", products: "منتجات", loading: "جارٍ تحميل الكتالوج…",
+    search: "بحث", searchPlaceholder: "مضرب، كرات، حقيبة، مرجع…", category: "الفئة", allCategories: "جميع الفئات", products: "منتجات", loading: "جارٍ تحميل الكتالوج…",
     unavailable: "غير متوفر", addToCart: "أضف إلى السلة", viewProduct: "عرض المنتج", loadMore: "عرض المزيد", yourCart: "سلة التسوق", emptyCart: "سلة التسوق فارغة.", subtotal: "المجموع قبل العرض", total: "المجموع", promoSecondItem: "عرض", promoApplied: "تم تطبيق العرض", promoHint: "تُطبّق العروض النشطة تلقائيًا، عرض واحد فقط في كل مرة.", promotionProducts: "المنتجات المشمولة بالعرض", clearPromotionFilter: "عرض كل المنتجات", checkout: "إتمام الطلب",
     continueShopping: "متابعة التسوق", quantity: "الكمية", remove: "حذف", orderTitle: "إتمام الطلب", orderSubtitle: "لا يوجد دفع إلكتروني. سيتواصل معك فريقنا لتأكيد الطلب.", fullName: "الاسم الكامل", phone: "رقم الهاتف", city: "المدينة", address: "عنوان التوصيل",
     note: "ملاحظة", optional: "اختياري", confirmOrder: "إرسال الطلب", sending: "جارٍ الإرسال…", orderSuccess: "تم استلام طلبك", orderSuccessText: "شكرًا لك. سيتواصل معك فريقنا لتأكيد توفر المنتجات والطلب قبل التجهيز.", orderRef: "رقم الطلب", close: "إغلاق", orderFailed: "تعذر تسجيل الطلب. تحقق من معلوماتك ثم حاول مرة أخرى.",
@@ -121,7 +121,7 @@ const copy: Record<StorefrontLanguage, Copy> = {
     discover: "Discover the collection", whatsapp: "WhatsApp", cashOnDelivery: "Cash on delivery", confirmation: "Confirmed by our team", moroccoDelivery: "Delivery across Morocco",
     weeklyPromo: "WEEKLY PROMOTION", weeklyPromoKicker: "Current offers", bestSellers: "BEST SELLERS", bestSellersKicker: "Customer favorites", bestSellerText: "A selection of customer-favorite styles.",
     collections: "OUR COLLECTIONS", collectionsKicker: "Choose your style", packs: "OUR PACKS", packsKicker: "Offers selected for you", allProducts: "ALL MODELS",
-    search: "Search", searchPlaceholder: "Watch, wallet, reference…", category: "Category", allCategories: "All categories", products: "items", loading: "Loading catalog…",
+    search: "Search", searchPlaceholder: "Racket, balls, bag, reference…", category: "Category", allCategories: "All categories", products: "items", loading: "Loading catalog…",
     unavailable: "Unavailable", addToCart: "Add to cart", viewProduct: "View product", loadMore: "Show more", yourCart: "Your cart", emptyCart: "Your cart is empty.", subtotal: "Subtotal", total: "Total", promoSecondItem: "Promotion", promoApplied: "Offer applied", promoHint: "Active promotions apply automatically, one at a time.", promotionProducts: "Products included in the offer", clearPromotionFilter: "View full catalog", checkout: "Checkout",
     continueShopping: "Continue shopping", quantity: "Quantity", remove: "Remove", orderTitle: "Complete your order", orderSubtitle: "No online payment. Our team will contact you to confirm the order.", fullName: "Full name", phone: "Phone", city: "City", address: "Delivery address",
     note: "Note", optional: "optional", confirmOrder: "Place my order", sending: "Sending…", orderSuccess: "Order received", orderSuccessText: "Thank you. Our team will contact you to confirm availability and your order before preparation.", orderRef: "Reference", close: "Close", orderFailed: "We could not register your order. Check your details and try again.",
@@ -131,9 +131,9 @@ const copy: Record<StorefrontLanguage, Copy> = {
 };
 
 const categoryCopy: Record<StorefrontLanguage, Record<string, string>> = {
-  fr: { "Packs & offres": "Packs & offres", Portefeuilles: "Portefeuilles", Montres: "Montres", Bijoux: "Bijoux", Autre: "Autre" },
-  ar: { "Packs & offres": "الباقات والعروض", Portefeuilles: "المحافظ", Montres: "الساعات", Bijoux: "المجوهرات", Autre: "أخرى" },
-  en: { "Packs & offres": "Packs & offers", Portefeuilles: "Wallets", Montres: "Watches", Bijoux: "Jewelry", Autre: "Other" },
+  fr: { "Packs & offres": "Packs & offres", Raquettes: "Raquettes", Balles: "Balles", Sacs: "Sacs", Accessoires: "Accessoires", Textile: "Textile", Chaussures: "Chaussures", Autre: "Autre" },
+  ar: { "Packs & offres": "الباقات والعروض", Raquettes: "المضارب", Balles: "الكرات", Sacs: "الحقائب", Accessoires: "الإكسسوارات", Textile: "الملابس", Chaussures: "الأحذية", Autre: "أخرى" },
+  en: { "Packs & offres": "Packs & offers", Raquettes: "Rackets", Balles: "Balls", Sacs: "Bags", Accessoires: "Accessories", Textile: "Apparel", Chaussures: "Shoes", Autre: "Other" },
 };
 
 const INITIAL_VISIBLE = 24;
@@ -218,7 +218,7 @@ function trackLeadOnce(orderRef: string, total: number, lines: Array<{ item: Cat
 }
 
 function JyMark() {
-  return <svg className="mj-jy" viewBox={`0 0 ${JY_MARK.width} ${JY_MARK.height}`} aria-hidden="true" focusable="false"><path fillRule="evenodd" d={JY_MARK.d} /></svg>;
+  return <img className="mj-jy" src="/brand/jy-mark.svg" alt="" width={169} height={232} aria-hidden="true" />;
 }
 
 function SafeImage({ src, alt, fallback, priority = false, width, height }: { src: string; alt: string; fallback: ReactNode; priority?: boolean; width?: number; height?: number }) {
@@ -721,9 +721,9 @@ export default function StorefrontClientV3({ initialCatalog, productKey }: { ini
   }
 
   const ui = {
-    fr: { heroCta: "Voir les modèles", dealCta: "Voir les produits concernés", packs: "Packs", packsText: "Plusieurs pièces, un prix réduit.", best: "Les plus demandés", catalogue: "Tous les modèles", all: "Tout", steps: "Commander en 3 étapes", cartBar: "Voir le panier", contactCta: "Écrire sur WhatsApp", about: "À propos de nous", values: [["Raffinement", "Des pièces choisies pour leur allure."], ["Détail", "Une finition regardée de près."], ["Confiance", "Confirmé par téléphone, payé à la réception."]] as [string, string][] },
-    ar: { heroCta: "شاهد الموديلات", dealCta: "المنتجات المشمولة", packs: "الباقات", packsText: "عدة قطع بسعر مخفض.", best: "الأكثر طلبًا", catalogue: "جميع الموديلات", all: "الكل", steps: "اطلب في 3 خطوات", cartBar: "عرض السلة", contactCta: "راسلنا على واتساب", about: "من نحن", values: [["الرقي", "قطع مختارة لجمال مظهرها."], ["التفاصيل", "تشطيب نراقبه عن قرب."], ["الثقة", "تأكيد بالهاتف والدفع عند الاستلام."]] as [string, string][] },
-    en: { heroCta: "Shop the models", dealCta: "See eligible products", packs: "Packs", packsText: "Several pieces, one reduced price.", best: "Most wanted", catalogue: "All models", all: "All", steps: "Order in 3 steps", cartBar: "View cart", contactCta: "Message us on WhatsApp", about: "About us", values: [["Refinement", "Pieces chosen for their look."], ["Detail", "A finish checked up close."], ["Trust", "Confirmed by phone, paid on delivery."]] as [string, string][] },
+    fr: { heroCta: "Voir les produits", dealCta: "Voir les produits concernés", packs: "Packs", packsText: "Plusieurs pièces, un prix réduit.", best: "Les plus demandés", catalogue: "Tous les produits", all: "Tout", steps: "Commander en 3 étapes", cartBar: "Voir le panier", contactCta: "Écrire sur WhatsApp", about: "À propos de nous", values: [["Performance", "Du matériel choisi pour jouer mieux."], ["Style", "Un look qui suit ton jeu, sur le terrain et en dehors."], ["Confiance", "Confirmé par téléphone, payé à la réception."]] as [string, string][] },
+    ar: { heroCta: "شاهد المنتجات", dealCta: "المنتجات المشمولة", packs: "الباقات", packsText: "عدة قطع بسعر مخفض.", best: "الأكثر طلبًا", catalogue: "جميع المنتجات", all: "الكل", steps: "اطلب في 3 خطوات", cartBar: "عرض السلة", contactCta: "راسلنا على واتساب", about: "من نحن", values: [["الأداء", "معدات مختارة لتلعب أفضل."], ["الستايل", "لوك يرافق لعبك داخل الملعب وخارجه."], ["الثقة", "تأكيد بالهاتف والدفع عند الاستلام."]] as [string, string][] },
+    en: { heroCta: "Shop now", dealCta: "See eligible products", packs: "Packs", packsText: "Several pieces, one reduced price.", best: "Most wanted", catalogue: "All products", all: "All", steps: "Order in 3 steps", cartBar: "View cart", contactCta: "Message us on WhatsApp", about: "About us", values: [["Performance", "Gear chosen to play better."], ["Style", "A look that follows your game, on and off court."], ["Trust", "Confirmed by phone, paid on delivery."]] as [string, string][] },
   }[lang];
   const aboutTitle = localized?.aboutTitle || "";
   const aboutText = localized?.aboutText || "";
@@ -856,11 +856,11 @@ export default function StorefrontClientV3({ initialCatalog, productKey }: { ini
     </>}
 
     {!isProductPage && <>
-    {/* Accueil : le logo JIYA dans son cadran (même image que l'ouverture), puis un titre court. */}
+    {/* Accueil : un terrain de padel animé (même scène que l'ouverture), puis un titre court. */}
     <section className="mj-hero">
       <div className="mj-hero-emblem" aria-hidden="true">
-        <span className="mj-dial-ring" />
-        <img src="/brand/yaji-move-emblem.svg" alt="" width={682} height={522} fetchPriority="high" decoding="async" />
+        <span className="mj-hero-speed" />
+        <PadelScene />
       </div>
       <div className="mj-hero-copy">
         {leadPromotion && <a className="mj-hero-chip" href="#promotions">{promotionRuleLabel(leadPromotion)}</a>}
@@ -959,7 +959,7 @@ export default function StorefrontClientV3({ initialCatalog, productKey }: { ini
       {waUrl && <a className="mj-button" href={waUrl} target="_blank" rel="noreferrer">{ui.contactCta}</a>}
     </section>
     <footer className="storefront-v3-footer mj-footer">
-      <div><img className="mj-footer-logo" src="/brand/yaji-move-logo.svg" alt={brand} width={682} height={522} loading="lazy" /><small>{localized?.shippingNote || catalog?.shippingNote}</small></div>
+      <div><img className="mj-footer-logo" src="/brand/yaji-move-logo.svg" alt={brand} width={1000} height={320} loading="lazy" /><small>{localized?.shippingNote || catalog?.shippingNote}</small></div>
       <nav className="mj-legal-links" aria-label="Informations boutique">
         {aboutText && <a href={`${home}#a-propos`}>{ui.about}</a>}
         <a href="/boutique/suivi">{lang === "ar" ? "تتبع طلبي" : lang === "en" ? "Track my order" : "Suivre ma commande"}</a>

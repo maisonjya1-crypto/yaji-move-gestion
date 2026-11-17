@@ -3,15 +3,15 @@ import { GOOGLE_SITE_VERIFICATION, PUBLIC_SITE_URL, STOREFRONT_URL } from "../..
 import "./storefront-modern.css";
 import "./legal.css";
 
-const title = "YAJI MOVE — Montres, bijoux et portefeuilles au Maroc";
-const description = "YAJI MOVE : montres, bijoux, portefeuilles et packs cadeaux. Livraison partout au Maroc, paiement à la livraison, confirmation par téléphone.";
+const title = "YAJI MOVE — Padel et sport au Maroc";
+const description = "YAJI MOVE : raquettes, balles, sacs et accessoires de padel. Livraison partout au Maroc, paiement à la livraison, confirmation par téléphone.";
 
 export const metadata: Metadata = {
   metadataBase: new URL(PUBLIC_SITE_URL),
   title: { default: title, template: "%s · YAJI MOVE" },
   description,
   applicationName: "YAJI MOVE",
-  keywords: ["YAJI MOVE", "YajiMove", "Yaji", "montres Maroc", "bijoux Maroc", "portefeuille homme Maroc", "coffret cadeau Maroc", "paiement à la livraison"],
+  keywords: ["YAJI MOVE", "YajiMove", "Yaji", "padel Maroc", "raquette padel Maroc", "balles padel", "accessoires padel", "sport Maroc", "paiement à la livraison"],
   alternates: { canonical: STOREFRONT_URL },
   robots: {
     index: true,
@@ -38,7 +38,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#0e0c0c",
+  themeColor: "#0a0a0a",
   colorScheme: "dark",
 };
 
