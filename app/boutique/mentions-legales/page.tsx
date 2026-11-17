@@ -7,7 +7,7 @@ export default function MentionsLegales() {
   return <LegalPage title="Mentions légales" introduction="Informations d&apos;identification et contacts de la boutique YAJI MOVE.">
     <section><h2>Éditeur de la boutique</h2>
       <p><strong>Nom commercial :</strong> YAJI MOVE.</p>
-      <p><strong>Activité :</strong> vente à distance de montres, bijoux, portefeuilles et packs, au Maroc.</p>
+      <p><strong>Activité :</strong> vente à distance d’articles de sport (padel : raquettes, balles, sacs, accessoires et textile), au Maroc.</p>
       <p><strong>Contact client :</strong> le WhatsApp indiqué dans la rubrique Contact de la boutique.</p>
       <p><strong>Identification professionnelle :</strong> la dénomination juridique de l&apos;exploitant, son adresse professionnelle et ses identifiants d&apos;immatriculation lorsqu&apos;ils sont applicables doivent être communiqués de façon complète par l&apos;exploitant. Ces mentions restent à compléter avant le lancement des campagnes publicitaires.</p>
     </section>

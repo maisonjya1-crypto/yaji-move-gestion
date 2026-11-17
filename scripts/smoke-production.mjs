@@ -91,4 +91,4 @@ if (imagePath?.startsWith("/api/storefront/media/")) {
   if (bytes.byteLength < 100) throw new Error("Le média public est vide ou corrompu.");
 }
 
-console.log(`Smoke production OK · téléchargement Android 2.5 OK · ${catalog.products.length} produit(s) · ${catalog.offers.length} offre(s) · média ${imagePath ? "OK" : "non requis"}${process.env.REQUIRE_REFERENCE_BLACK_DESIGN === "1" ? " · thème luxe v7 confirmé" : ""}`);
+console.log(`Smoke production OK · téléchargement Android 2.5 OK · ${catalog.products.length} produit(s) · ${catalog.offers.length} offre(s) · média ${imagePath ? "OK" : "non requis"}${process.env.REQUIRE_REFERENCE_BLACK_DESIGN === "1" ? " · thème sport v1 confirmé" : ""}`);
