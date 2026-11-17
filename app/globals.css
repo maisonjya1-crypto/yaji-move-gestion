@@ -1399,4 +1399,4 @@ button:focus-visible,textarea:focus-visible,input:focus-visible,select:focus-vis
 }
 
 /* YAJI MOVE : touche vert fluo sur l’onglet actif */
-.app-shell.theme-mauve-froid .nav-item.active { box-shadow: inset 3px 0 0 #d4ff3a; color:#ffffff; }
+.app-shell.theme-mauve-froid .nav-item.active { box-shadow: inset 3px 0 0 #d4ff3a; color:#ffffff; background:var(--sidebar-active); }
