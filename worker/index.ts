@@ -89,24 +89,23 @@ const worker = {
     return withSecurityHeaders(response, url.pathname, url.protocol === "https:");
   },
   async scheduled(controller: ScheduledController, _env: Env, ctx: ExecutionContext) {
-    if (controller.cron === "*/5 * * * *") {
-      ctx.waitUntil(
-        getRawDb()
-          .then((database) => processGoogleSheetsSyncQueue(database))
-          .then(() => undefined)
-          .catch((error) => console.error("YAJI MOVE scheduled Google Sheets sync failed", error instanceof Error ? error.message : String(error))),
+    // Offre gratuite Cloudflare : 5 crons maximum pour tout le compte (partagés avec Maison JIYA).
+    // YAJI MOVE n'utilise donc qu'un seul cron (toutes les 30 min) qui enchaîne les tâches.
+    const tasks: Promise<unknown>[] = [
+      getRawDb()
+        .then((database) => processGoogleSheetsSyncQueue(database))
+        .catch((error) => console.error("YAJI MOVE scheduled Google Sheets sync failed", error instanceof Error ? error.message : String(error))),
+      syncCarrierOperations(),
+    ];
+    const when = new Date(controller.scheduledTime);
+    if (when.getUTCHours() === 2 && when.getUTCMinutes() < 30) {
+      tasks.push(
+        getRawDb().then((database) => runDailyMaintenance(database)),
+        syncMetaAds(),
+        reconcileOrderAllocations(),
       );
-      return;
     }
-    if (controller.cron === "*/30 * * * *") {
-      ctx.waitUntil(syncCarrierOperations());
-      return;
-    }
-    ctx.waitUntil(Promise.all([
-      getRawDb().then((database) => runDailyMaintenance(database)),
-      syncMetaAds().then(() => undefined),
-      reconcileOrderAllocations().then(() => undefined),
-    ]).then(() => undefined));
+    ctx.waitUntil(Promise.all(tasks).then(() => undefined));
   },
 };
 
